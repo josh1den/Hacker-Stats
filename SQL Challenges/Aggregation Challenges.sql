@@ -68,3 +68,88 @@ ORDER BY lat_n
 LIMIT 1;
 
 /*
+Query the Western Longitude (LONG_W)where the smallest Northern Latitude
+(LAT_N) in STATION is greater than . Round your answer to decimal places.
+*/
+
+SELECT ROUND(long_w, 4)
+FROM (SELECT ROUND(lat_n, 4),
+             long_w
+      FROM station
+      WHERE lat_n > 38.7780
+      ORDER BY lat_n
+      LIMIT 1
+) sub;
+
+/*
+Consider P1(a,b) and P2(c,d) to be two points on a 2D plane.
+• a equals the min value in LAT_N
+• b equals min value in long_w
+• c equals max value in LAT_N
+• d equals max value in LONG_W
+Query the Manhattan Distance between points P1 and P2 and round it to a scale
+of 4 decimal places
+*/
+
+-- calculate manhattan distance (p1[a] - p2[c]) + (p1[b] - p2[d])
+SELECT ROUND(((MAX(lat_n) - MIN(lat_n)) + (MAX(long_w) - MIN(long_w))), 4)
+FROM station;
+
+/*
+Consider P1(a,c) and P2(b,d) to be two points on a 2D plane where (a,b) are
+the respective minimum and maximum values of Northern Latitude (LAT_N)
+and (c,d) are the respective minimum and maximum values of
+Western Longitude (LONG_W) in STATION.
+
+Query the Euclidean Distance between points P1 and P2
+and and format your answer to display 4 decimal digits.
+*/
+
+-- calculate euclidean Distance
+-- d = √(X2 - X1)**2  + (Y2 - Y1)**2
+-- d = √(b - a)**2 + (d - c)**2
+-- d = √(MAX(LAT_N) - MIN(LAT_N))**2 + (MAX(LONG_W) - MIN(LONG_W))**2
+
+SELECT
+      ROUND(SQRT(
+      POWER(MAX(lat_n) - MIN(lat_n),2) +
+      POWER(MAX(long_w) - MIN(long_w),2)
+        ),4)
+        AS euclidean_distance
+FROM station;
+
+/*
+A median is defined as a number separating the higher half of a data set from
+the lower half. Query the median of the Northern Latitudes (LAT_N) from STATION
+and round your answer to 4 decimal places.
+*/
+
+SELECT ROUND(s.lat_n, 4)
+FROM station AS s
+WHERE (SELECT ROUND(COUNT(s.id)/2) - 1
+       FROM station) =
+      (SELECT COUNT(s1.id)
+       FROM station AS s1
+       WHERE s1.lat_n > s.lat_n);
+
+/*
+Query the total population of all cities in CITY where District is
+California.
+*/
+
+SELECT SUM(population)
+FROM CITY
+WHERE district = 'California';
+
+/*
+Samantha was tasked with calculating the average monthly salaries for all
+employees in the EMPLOYEES table, but did not realize her keyboard's 0 key was
+broken until after completing the calculation. She wants your helf finding the
+difference between her miscalculation (using salaries with any zeros removed)
+and the actual average salary. Write a query calculating the amount of error
+(ie actual - miscalculated average monthly salaries), and round it up to the
+next integer.
+*/
+
+SELECT CEILING(AVG(salary) - AVG(REPLACE(salary, '0', '')))
+FROM employees;
