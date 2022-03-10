@@ -109,3 +109,78 @@ SELECT name
 FROM employee
 WHERE salary > 2000 AND months < 10
 ORDER BY employee_id;
+
+/*
+Write a query identifying the type of each record in the TRIANGLES table using
+its three side lengths. Output one of the following statements for each record
+in the table:
+
+Equilateral: It's a triangle with sides of equal length.
+Isosceles: It's a triangle with sides of equal length.
+Scalene: It's a triangle with sides of differing lengths.
+Not A Triangle: The given values of A, B, and C don't form a triangle.
+*/
+
+SELECT CASE
+       WHEN A + B <= C THEN 'Not A Triangle'
+       WHEN A = B AND B = C THEN 'Equilateral'
+       WHEN A = B OR A = C OR B = C THEN 'Isosceles'
+       WHEN A != B AND B != C THEN 'Scalene'
+       END AS result
+FROM triangles;
+
+/*
+Generate the following two result sets:
+  1. Query an alphabetically ordered list of all names in OCCUPATIONS,
+  immediately followed by the first letter of each profession as a parenthetical
+  (i.e.: enclosed in parentheses). For example: AnActorName (A), ADoctorName (D)
+  AProfessorName(P), and ASingerName(S).
+  2. Query the number of occurrences of each occupation in OCCUPATIONS. Sort the
+  occurrences in ascending order, and output them in the following format:
+
+  There are a total of [occupation_count] [occupation]s.
+
+  Where occupation_count is the number of ocurrences of an occupation in
+  OCCUPATIONS and [occupation] is the lowercase occupation name. If more than
+  one Occupation has the same [occupation_count], they should be ordered
+  alphabetically.
+
+Note: there will be at least two entries in the table for each type of
+occupation.
+*/
+
+SELECT
+      CONCAT(name, '(', LEFT(occupation, 1), ')') AS Name
+FROM occupations
+ORDER BY Name;
+
+SELECT
+     CONCAT('There are a total of ', COUNT(Occupation), ' ',
+            LOWER(Occupation), 's.')
+FROM occupations
+GROUP BY occupation
+ORDER BY COUNT(Occupation), Occupation;
+
+/*
+Pivot the Occupation column in OCCUPATIONS so that each name is sorted
+alphabetically and displayed underneath its corresponding Occupation. The output
+column headers should be Doctor, Professor, Singer, and Actor, respectively.
+
+Note: Print NULL when there are no more names corresponding to an occupation.
+*/
+SELECT doctor, -- step 3 query step 2 output 
+       professor,
+       singer,
+       actor
+FROM
+(SELECT -- step 2 query the step 1 output grouping each ranking
+      r,
+      MAX(CASE WHEN occupation = "Doctor" THEN name ELSE NULL END) doctor,
+      MAX(CASE WHEN occupation = "Professor" THEN name ELSE NULL END) professor,
+      MAX(CASE WHEN occupation = "Singer" THEN name ELSE NULL END) singer,
+      MAX(CASE WHEN occupation = "Actor" THEN name ELSE NULL END) actor
+FROM (SELECT name, -- step 1 rank and partition by occupation
+       occupation,
+       RANK() OVER (PARTITION BY occupation ORDER BY name ASC) r
+      FROM occupations) s1
+GROUP BY 1) s2;
